@@ -10,9 +10,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 # 项目目录
-project_dir = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+project_dir = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + ".." + os.path.sep + "..")
 # 把当前python程序的项目目录的绝对路径加入到环境变量PYTHON_PATH中
-sys.path.append(project_dir)
+sys.path.insert(0, project_dir)
 
 from src.mock.mock import mock_word_cloud
 
@@ -103,8 +103,8 @@ async def read_root(item: Item):
 
 if __name__ == '__main__':
     # 项目目录
-    project_dir = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+    project_dir = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + ".." + os.path.sep + "..")
     # 替换词云源代码
     mock_word_cloud(project_dir)
     # 运行API
-    uvicorn.run(app='review_word_cloud:app', host="127.0.0.1", port=8000, reload=True, debug=True)
+    uvicorn.run(app='review_word_cloud:app', host="127.0.0.1", port=8888, reload=True, debug=True)
