@@ -18,7 +18,7 @@ def mock_word_cloud(project_work_space: Union[Path, str]) -> None:
     if dest_file_path.exists():
         dest_file_path.unlink()
     shutil.copyfile(src, dest_file_path)
-    # print("review_wordcloud 后台文件生成成功！")
+    print("review_wordcloud 后台文件生成成功！")
 
 
 if __name__ == "__main__":

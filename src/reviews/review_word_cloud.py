@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from typing import List, Dict
 from tempfile import mkstemp
@@ -7,6 +8,12 @@ import aiofiles
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
+
+# 项目目录
+project_dir = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+# 把当前python程序的项目目录的绝对路径加入到环境变量PYTHON_PATH中
+sys.path.append(project_dir)
+
 from src.mock.mock import mock_word_cloud
 
 app = FastAPI()
@@ -19,23 +26,21 @@ class Item(BaseModel):
     scores: Dict
 
 
-# 替换词云源代码
-mock_word_cloud("/Users/zhou/Downloads/ddc_oj")
-
-
 async def review_word_cloud(code: str, answer: Dict, scores: Dict, debug=False):
     # 将code写入文件
     tmp_fp, tmp_file_name = mkstemp(suffix=".py", dir='.', text=True)
     async with aiofiles.open(tmp_file_name, "w") as f:
         await f.write(code)
+    if debug:
+        print(f'tmp_fp-->{tmp_fp} === tmp_file_name-->{tmp_file_name}')
 
     # 创建子进程执行代码
+    cmd = ['python', '-sB', tmp_file_name]
     process = await asyncio.create_subprocess_exec(
-        *['python', '-sB', tmp_file_name],
+        *cmd,
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
-        cwd='.',
         close_fds=True
     )
 
@@ -91,10 +96,15 @@ async def review_word_cloud(code: str, answer: Dict, scores: Dict, debug=False):
 @app.post("/reviews/wordcloud")
 async def read_root(item: Item):
     # 是否debug
-    debug = False
+    debug = True
     result = await review_word_cloud(code=item.code, answer=item.answer, scores=item.scores, debug=debug)
     return result
 
 
 if __name__ == '__main__':
+    # 项目目录
+    project_dir = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+    # 替换词云源代码
+    mock_word_cloud(project_dir)
+    # 运行API
     uvicorn.run(app='review_word_cloud:app', host="127.0.0.1", port=8000, reload=True, debug=True)
